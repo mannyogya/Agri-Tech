@@ -2,6 +2,8 @@ from fastapi import FastAPI, UploadFile, File, Form, Header
 from fastapi.middleware.cors import CORSMiddleware
 import os
 from sqlalchemy import create_engine, text
+from typing import Any
+from datetime import datetime
 
 app = FastAPI(title="Agritech")
 
@@ -53,7 +55,34 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+def _serialize_row(row: dict[str, Any]) -> dict[str, Any]:
+    out = dict(row)
+    ts = out.get("created_at")
+    if isinstance(ts, datetime):
+        out["created_at"] = ts.isoformat()
+    return out
 
+
+@app.get("/diagnoses")
+def list_diagnoses(x_client_id: str | None = Header(default=None, alias="X-Client-Id")):
+    client_id = x_client_id or "anonymous"
+
+    with engine.connect() as conn:
+        result = conn.execute(
+            text(
+                """
+                SELECT id, created_at, language, symptom_text, disease, confidence, risk_level, advice
+                FROM diagnoses
+                WHERE client_id = :cid
+                ORDER BY created_at DESC
+                LIMIT 50
+                """
+            ),
+            {"cid": client_id},
+        )
+        rows = [dict(r._mapping) for r in result]
+
+    return {"items": [_serialize_row(r) for r in rows]}
 
 @app.get("/")
 def home():
