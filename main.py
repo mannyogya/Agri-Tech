@@ -25,6 +25,8 @@ _REPO_ROOT = Path(__file__).resolve().parent
 _ORT_SESSION: Any = None
 _CLASS_NAMES: list[str] | None = None
 _ADVICE_MAP: dict[str, Any] | None = None
+# Set when files look valid but ONNX fails to load (shows in /model-status for debugging).
+_LAST_LOAD_ERROR: str | None = None
 
 
 def _load_json(path: Path) -> Any:
@@ -35,8 +37,9 @@ def _load_json(path: Path) -> Any:
 
 def _ensure_model_loaded() -> bool:
     """Return True if ONNX session + labels + advice are ready."""
-    global _ORT_SESSION, _CLASS_NAMES, _ADVICE_MAP
+    global _ORT_SESSION, _CLASS_NAMES, _ADVICE_MAP, _LAST_LOAD_ERROR
     if ort is None:
+        _LAST_LOAD_ERROR = "onnxruntime import failed (not installed)"
         return False
     if _ORT_SESSION is not None and _CLASS_NAMES is not None and _ADVICE_MAP is not None:
         return True
@@ -47,6 +50,7 @@ def _ensure_model_loaded() -> bool:
         model_path = str(cand) if cand.is_file() else ""
 
     if not model_path or not Path(model_path).is_file():
+        _LAST_LOAD_ERROR = f"model file missing or not found: {model_path!r}"
         return False
 
     labels_path = (os.getenv("LABELS_PATH") or "").strip() or str(_REPO_ROOT / "labels.json")
@@ -54,17 +58,28 @@ def _ensure_model_loaded() -> bool:
 
     labels_data = _load_json(Path(labels_path))
     if not labels_data or "classes" not in labels_data:
+        _LAST_LOAD_ERROR = f"labels.json missing or has no 'classes' key: {labels_path!r}"
         return False
 
     advice = _load_json(Path(advice_path))
     if not isinstance(advice, dict):
+        _LAST_LOAD_ERROR = f"advice JSON missing or not a dict: {advice_path!r}"
         return False
 
-    _ORT_SESSION = ort.InferenceSession(
-        model_path, providers=["CPUExecutionProvider"]
-    )
+    try:
+        _ORT_SESSION = ort.InferenceSession(
+            model_path, providers=["CPUExecutionProvider"]
+        )
+    except Exception as e:
+        _LAST_LOAD_ERROR = f"ONNX load failed: {e!r}"
+        _ORT_SESSION = None
+        _CLASS_NAMES = None
+        _ADVICE_MAP = None
+        return False
+
     _CLASS_NAMES = list(labels_data["classes"])
     _ADVICE_MAP = advice
+    _LAST_LOAD_ERROR = None
     return True
 
 
@@ -256,11 +271,14 @@ def home():
 def model_status():
     """Whether ONNX classifier + labels + advice loaded (real predictions vs mock)."""
     ok = _ensure_model_loaded()
-    return {
+    out: dict[str, Any] = {
         "model_loaded": ok,
         "num_classes": len(_CLASS_NAMES) if _CLASS_NAMES else 0,
         "onnxruntime_installed": ort is not None,
     }
+    if not ok and _LAST_LOAD_ERROR:
+        out["load_error"] = _LAST_LOAD_ERROR
+    return out
 
 
 @app.post("/diagnose")
