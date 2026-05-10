@@ -11,7 +11,8 @@ CREATE TABLE IF NOT EXISTS diagnoses (
   confidence DOUBLE PRECISION NOT NULL,
   risk_level TEXT NOT NULL,
   advice TEXT NOT NULL,
-  image_url TEXT
+  image_url TEXT,
+  treatments_json TEXT
 );
 
 CREATE INDEX IF NOT EXISTS idx_diagnoses_client_created

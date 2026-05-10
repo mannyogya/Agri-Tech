@@ -3,51 +3,224 @@
     "en": {
       "disease": "Early Blight",
       "risk_level": "medium",
-      "advice": "Avoid overwatering and remove infected leaves. Use recommended fungicide per label."
+      "advice": "Reduce leaf wetness, mulch soil, remove badly infected lower leaves, and use a labeled fungicide program.",
+      "treatments": [
+        {
+          "name": "Chlorothalonil-based fungicide (examples: Bravo, others; check local registration)",
+          "active_ingredient": "Chlorothalonil",
+          "when_to_apply": "Start at first leaf spots or when past conditions favored disease; continue on the label interval (commonly every 7–14 days) while pressure remains.",
+          "rate": "Mix and apply only at the rate on your product label for tomato foliage (g/L or oz/acre as printed). Never exceed the label maximum applications per year.",
+          "notes": "Respect pre-harvest interval (PHI) and re-entry interval (REI). Rotate with other FRAC groups to slow resistance."
+        },
+        {
+          "name": "Azoxystrobin + difenoconazole (or other labeled premix; registration varies)",
+          "active_ingredient": "Strobilurin + DMI premix",
+          "when_to_apply": "Often used in rotation with contact fungicides during the season as allowed on label.",
+          "rate": "Premix products: use packaged ratio only — do not alter concentration beyond label.",
+          "notes": "Avoid back-to-back strobilurin-only sprays; partner with chlorothalonil/mancozeb where labels allow."
+        }
+      ]
     },
     "hi": {
       "disease": "अर्ली ब्लाइट",
       "risk_level": "medium",
-      "advice": "ज्यादा पानी न दें और संक्रमित पत्तियां हटा दें।"
+      "advice": "पत्तों पर गीला कम रखें, मुल्च करें, बहुत संक्रमित निचली पत्तियां हटाएं, लेबल वाला फ़फूंदनाशी कार्यक्रम चुनें।",
+      "treatments": [
+        {
+          "name": "क्लोरोथालोनिल आधारित फ़फूंदनाशी (स्थानीय पंजीकरण देखें)",
+          "active_ingredient": "Chlorothalonil",
+          "when_to_apply": "पहले धब्बों पर या बारिश/ओस के दबाव पर लेबल अनुसार दोहराएं।",
+          "rate": "केवल उत्पाद लेबल पर टमाटर के लिए लिखी दर।",
+          "notes": "PHI व REI लागू करें। अलग-अलग FRAC समूह घुमाएं।"
+        }
+      ]
     },
     "es": {
       "disease": "Tizón temprano",
       "risk_level": "medium",
-      "advice": "Evita el exceso de riego y retira las hojas infectadas."
+      "advice": "Reduce la humedad en el follaje, usa mulch, retira hojas muy infectadas y aplica un programa de fungicida según etiqueta.",
+      "treatments": [
+        {
+          "name": "Fungicida con clorotalonil (registro local requerido)",
+          "active_ingredient": "Clorotalonil",
+          "when_to_apply": "Al primer síntoma o cuando haya condiciones favorables; repetir según la etiqueta.",
+          "rate": "Solo la dosis del envase para tomate (foliar).",
+          "notes": "Respeta IPA, tiempo de carencia y REI. Alterna grupos FRAC."
+        }
+      ]
     }
   },
   "Tomato___Late_blight": {
     "en": {
       "disease": "Late Blight",
       "risk_level": "high",
-      "advice": "Improve airflow, avoid wet foliage, remove infected tissue; consult local extension for fungicide timing."
+      "advice": "Act fast: improve ventilation, avoid overhead irrigation, remove heavily infected plants when feasible, and follow a protective fungicide program suitable for late blight in your region.",
+      "treatments": [
+        {
+          "name": "Fluopicolide + propamocarb or similar late-blight–labeled premix (registration varies)",
+          "active_ingredient": "Fluopicolide + propamocarb (example combo)",
+          "when_to_apply": "Preventively before outbreaks or immediately when weather is cool and wet; interval per label (often 5–10 days under severe pressure).",
+          "rate": "Label-only rate for tomatoes; products differ by formulation — never exceed maximum annual uses.",
+          "notes": "Combine with cultural controls; late blight spores spread rapidly in humid weather."
+        },
+        {
+          "name": "Chlorothalonil or mancozeb (protectant) as part of rotation",
+          "active_ingredient": "Chlorothalonil or mancozeb",
+          "when_to_apply": "Intercalated with systemic partners where labels permit for resistance management.",
+          "rate": "Use manufacturer label rate and coverage volume for thorough leaf protection.",
+          "notes": "Alternate modes of action; check potato/tomato host restrictions on label."
+        }
+      ]
     },
     "hi": {
       "disease": "लेट ब्लाइट",
       "risk_level": "high",
-      "advice": "हवा बेहतर करें, गीली पत्तियों से बचें, संक्रमित हिस्से हटाएं।"
+      "advice": "तुरंत कार्रवाई: हवा, सिंचाई, संक्रमित पौधे हटाएं; क्षेत्र के लिए उपयुक्त फ़फूंदनाशी लेबल अनुसार।",
+      "treatments": [
+        {
+          "name": "स्थानीय लेबल पर देर से ब्लाइट के लिए दर्ज प्रीमिक्स / रक्षण",
+          "active_ingredient": "स्थानीय पंजीकरण के अनुसार",
+          "when_to_apply": "गीला ठंडा मौसम — लेबल अंतराल।",
+          "rate": "केवल लेबल दर।",
+          "notes": "प्रतिरोध प्रबंधन के लिए घुमाव।"
+        }
+      ]
     },
     "es": {
       "disease": "Tizón tardío",
       "risk_level": "high",
-      "advice": "Mejora el flujo de aire, evita mojar el follaje y retira tejido infectado."
+      "advice": "Actúa rápido: ventilación, riego al suelo, elimina focos fuertes; programa fungicida regional para tizón tardío.",
+      "treatments": [
+        {
+          "name": "Premezclas / productos con registro específico para tizón tardío",
+          "active_ingredient": "Según etiqueta local",
+          "when_to_apply": "Clima frío y húmedo: intervalo de la etiqueta.",
+          "rate": "Dosis de etiqueta solamente.",
+          "notes": "Rota modos de acción y respeta carencias."
+        }
+      ]
+    }
+  },
+  "Tomato___Leaf_Mold": {
+    "en": {
+      "disease": "Leaf Mold",
+      "risk_level": "medium",
+      "advice": "Common in humid greenhouses; increase airflow, reduce humidity, avoid leaf wetness overnight, and remove heavily spotted foliage.",
+      "treatments": [
+        {
+          "name": "DMI or SDHI fungicides labeled for tomato leaf mold (check registration)",
+          "active_ingredient": "Examples: difenoconazole, benzovindiflupyr (formulations vary)",
+          "when_to_apply": "Begin at first symptoms or preventively in humid seasons; repeat per label until conditions improve.",
+          "rate": "Apply strictly per label concentration and water volume for greenhouse or field tomatoes as approved.",
+          "notes": "Rotate with non-cross-resistant partners; some populations show reduced sensitivity — scout effectiveness."
+        },
+        {
+          "name": "Sulfur or bicarbonate-based products (organic options where permitted)",
+          "active_ingredient": "Sulfur / potassium bicarbonate (product-dependent)",
+          "when_to_apply": "Often shorter intervals; avoid high temperature phytotoxicity per label.",
+          "rate": "Label rate only; coverage of leaf undersides is important for mold fungi.",
+          "notes": "Test on a few plants if unsure of varietal sensitivity."
+        }
+      ]
+    },
+    "hi": {
+      "disease": "लीफ़ मोल्ड",
+      "risk_level": "medium",
+      "advice": "नम ग्रीनहाउस में आम; हवा बढ़ाएं, रात में पत्ते गीले न रखें।",
+      "treatments": [
+        {
+          "name": "टमाटर लीफ़ मोल्ड पर लेबल वाला DMI/SDHI फ़फूंदनाशी",
+          "active_ingredient": "स्थानीय पंजीकरण अनुसार",
+          "when_to_apply": "पहले लक्षण या रोकथाम लेबल अनुसार।",
+          "rate": "लेबल दर।",
+          "notes": "पत्तों के नीचे का कवरेज महत्वपूर्ण।"
+        }
+      ]
+    },
+    "es": {
+      "disease": "Moho foliar",
+      "risk_level": "medium",
+      "advice": "Frecuente en humedad; mejora ventilación y reduce rocio nocturno en el follaje.",
+      "treatments": [
+        {
+          "name": "Fungicida registrado para moho foliar del tomate (DMI/SDHI u orgánico)",
+          "active_ingredient": "Según etiqueta",
+          "when_to_apply": "Al síntoma o en prevención según condiciones.",
+          "rate": "Dosis de etiqueta; cubrir envés de hojas.",
+          "notes": "Alterna modos de acción."
+        }
+      ]
+    }
+  },
+  "Tomato___Septoria_leaf_spot": {
+    "en": {
+      "disease": "Septoria Leaf Spot",
+      "risk_level": "medium",
+      "advice": "Avoid working wet plants, mulch to limit soil splash, stake plants, and begin fungicides early when spots first appear.",
+      "treatments": [
+        {
+          "name": "Chlorothalonil or mancozeb (protectant programs)",
+          "active_ingredient": "Chlorothalonil or mancozeb",
+          "when_to_apply": "Start at lower-canopy spotting; continue 7–14 day schedules while rainy/windy splash conditions persist.",
+          "rate": "Label rate for tomato; ensure coverage especially lower leaves where infection starts.",
+          "notes": "Rotate with alternative FRAC groups; remove lowest infected leaves to reduce inoculum."
+        },
+        {
+          "name": "Azoxystrobin or pyraclostrobin-containing products (where labeled & rotated)",
+          "active_ingredient": "QoI (strobilurin)",
+          "when_to_apply": "Use within IPM rotation, not as solo chemistry.",
+          "rate": "Strictly label — strobulurin resistance risk exists for Septoria in some regions.",
+          "notes": "Partner with multi-site protectants per label recommendations."
+        }
+      ]
+    },
+    "hi": {
+      "disease": "सेप्टोरिया पत्ती धब्बा",
+      "risk_level": "medium",
+      "advice": "गीले पौधों पर काम कम करें, मुल्च से मिट्टी छलकाव कम करें।",
+      "treatments": [
+        {
+          "name": "क्लोरोथालोनिल या मैकोज़ेब (रक्षक)",
+          "active_ingredient": "Chlorothalonil / mancozeb",
+          "when_to_apply": "नीचे की पत्तियों पर धब्बे दिखते ही लेबल अनुसार।",
+          "rate": "लेबल दर।",
+          "notes": "FRAC घुमाव रखें।"
+        }
+      ]
+    },
+    "es": {
+      "disease": "Mancha foliar por Septoria",
+      "risk_level": "medium",
+      "advice": "Evita dispersar espolvoreo desde el suelo; acolate y usa mulch.",
+      "treatments": [
+        {
+          "name": "Clorotalonil o mancozeb (protectores)",
+          "active_ingredient": "Clorotalonil / mancozeb",
+          "when_to_apply": "Al inicio de manchas en el estrato bajo.",
+          "rate": "Según etiqueta para tomate.",
+          "notes": "Rota FRAC; retira hojas muy infectadas abajo."
+        }
+      ]
     }
   },
   "Tomato___healthy": {
     "en": {
       "disease": "Healthy (tomato)",
       "risk_level": "low",
-      "advice": "No clear disease signs. Continue good spacing, watering at soil level, and scouting."
+      "advice": "No clear disease signs. Keep scouting, sanitize tools, and maintain spacing and irrigation at soil level.",
+      "treatments": []
     },
     "hi": {
       "disease": "स्वस्थ (टमाटर)",
       "risk_level": "low",
-      "advice": "स्पष्ट रोग के लक्षण नहीं। अच्छी दूरी और मिट्टी पर पानी जारी रखें।"
+      "advice": "स्पष्ट रोग के लक्षण नहीं। निगरानी और अच्छी खेती अभ्यास जारी रखें।",
+      "treatments": []
     },
     "es": {
       "disease": "Sano (tomate)",
       "risk_level": "low",
-      "advice": "Sin signos claros de enfermedad. Mantén riego al suelo y buen espaciamiento."
+      "advice": "Sin signos claros de enfermedad. Continúa monitoreo y buenas prácticas.",
+      "treatments": []
     }
   }
 }

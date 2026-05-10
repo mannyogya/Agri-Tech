@@ -28,6 +28,13 @@ _ADVICE_MAP: dict[str, Any] | None = None
 # Set when files look valid but ONNX fails to load (shows in /model-status for debugging).
 _LAST_LOAD_ERROR: str | None = None
 
+# Shown with chemical suggestions — not a substitute for the registered product label.
+DEFAULT_TREATMENT_DISCLAIMER: dict[str, str] = {
+    "en": "Products, rates, and pre-harvest intervals vary by country and registration. Follow the printed product label and your local agricultural extension. This is educational information only.",
+    "hi": "दवाएं और खुराक देश और रजिस्ट्रेशन के अनुसार अलग होती हैं। उत्पाद लेबल और स्थानीय कृषि सलाह मानें — यह शैक्षिक जानकारी है।",
+    "es": "Los productos, dosis y carencias de cosecha varían por país y registro. Siga la etiqueta del producto y su extensión agrícola local. Esto es solo información educativa.",
+}
+
 
 def _load_json(path: Path) -> Any:
     if not path.is_file():
@@ -116,11 +123,18 @@ def _payload_from_model(class_key: str, confidence: float, language: str) -> dic
         if per_class:
             block = per_class.get(language) or per_class.get("en")
             if block:
+                raw_t = block.get("treatments")
+                treatments = raw_t if isinstance(raw_t, list) else []
+                disc = block.get("treatment_disclaimer") or DEFAULT_TREATMENT_DISCLAIMER.get(
+                    language
+                ) or DEFAULT_TREATMENT_DISCLAIMER["en"]
                 return {
                     "disease": block["disease"],
                     "confidence": conf,
                     "risk_level": block["risk_level"],
                     "advice": block["advice"],
+                    "treatments": treatments,
+                    "treatment_disclaimer": disc,
                 }
     pretty = class_key.replace("___", " — ").replace("_", " ")
     return {
@@ -128,28 +142,68 @@ def _payload_from_model(class_key: str, confidence: float, language: str) -> dic
         "confidence": conf,
         "risk_level": "medium",
         "advice": "No localized advice for this class yet — confirm with an agronomist. Keep improving training data and advice_by_class.json.",
+        "treatments": [],
+        "treatment_disclaimer": DEFAULT_TREATMENT_DISCLAIMER.get(language)
+        or DEFAULT_TREATMENT_DISCLAIMER["en"],
     }
 
 
 def _mock_payload(language: str) -> dict[str, Any]:
-    responses = {
+    responses: dict[str, dict[str, Any]] = {
         "en": {
             "disease": "Early Blight",
             "confidence": 0.78,
             "risk_level": "medium",
             "advice": "Avoid overwatering and remove infected leaves.",
+            "treatments": [
+                {
+                    "name": "Chlorothalonil-based fungicide (e.g. Bravo / equivalent)",
+                    "active_ingredient": "Chlorothalonil",
+                    "when_to_apply": "At first symptoms; repeat on the label schedule (often 7–14 days) while wet weather continues.",
+                    "rate": "Use only the rate on your product label for tomatoes (foliar). Do not exceed the label maximum per season.",
+                    "notes": "Observe PHI and REI on the label. Alternate FRAC groups with other modes of action.",
+                },
+                {
+                    "name": "Azoxystrobin + difenoconazole or similar premix (check local registration)",
+                    "active_ingredient": "Mixed (strobilurin + DMI)",
+                    "when_to_apply": "Use according to label for early blight; often rotated with chlorothalonil or mancozeb programs.",
+                    "rate": "Label-only; premix ratios are fixed—do not exceed labeled applications per year.",
+                    "notes": "Resistance management: rotate with non-strobilurin partners.",
+                },
+            ],
+            "treatment_disclaimer": DEFAULT_TREATMENT_DISCLAIMER["en"],
         },
         "hi": {
             "disease": "अर्ली ब्लाइट",
             "confidence": 0.78,
             "risk_level": "medium",
             "advice": "ज्यादा पानी न दें और संक्रमित पत्तियां हटा दें।",
+            "treatments": [
+                {
+                    "name": "क्लोरोथालोनिल आधारित फ़फूंदनाशी (उदाहरण: ब्रावो जैसे)",
+                    "active_ingredient": "Chlorothalonil",
+                    "when_to_apply": "पहले लक्षणों पर; गीले मौसम में लेबल अनुसार दोहराएं।",
+                    "rate": "केवल उत्पाद लेबल पर टमाटर के लिए दिखाई दर का उपयोग करें।",
+                    "notes": "कटाई से पहले अंतराल (PHI) और पुनः प्रवेश (REI) लेबल से मानें।",
+                }
+            ],
+            "treatment_disclaimer": DEFAULT_TREATMENT_DISCLAIMER["hi"],
         },
         "es": {
             "disease": "Tizón temprano",
             "confidence": 0.78,
             "risk_level": "medium",
             "advice": "Evita el exceso de riego y retira las hojas infectadas.",
+            "treatments": [
+                {
+                    "name": "Fungicida a base de clorotalonil (ej. Bravo u homólogo)",
+                    "active_ingredient": "Clorotalonil",
+                    "when_to_apply": "Al primer síntoma; repetir según la etiqueta mientras haya presión de enfermedad.",
+                    "rate": "Solo la dosis autorizada en la etiqueta para tomate (foliar).",
+                    "notes": "Respeta IPA y tiempo de reingreso indicados en la etiqueta.",
+                }
+            ],
+            "treatment_disclaimer": DEFAULT_TREATMENT_DISCLAIMER["es"],
         },
     }
     return responses.get(language, responses["en"])
@@ -171,15 +225,16 @@ def save_diagnosis_row(
     risk_level: str,
     advice: str,
     image_url: str | None = None,
+    treatments_json: str | None = None,
 ):
     with engine.begin() as conn:
         conn.execute(
             text(
                 """
                 INSERT INTO diagnoses
-                  (client_id, language, symptom_text, disease, confidence, risk_level, advice, image_url)
+                  (client_id, language, symptom_text, disease, confidence, risk_level, advice, image_url, treatments_json)
                 VALUES
-                  (:client_id, :language, :symptom_text, :disease, :confidence, :risk_level, :advice, :image_url)
+                  (:client_id, :language, :symptom_text, :disease, :confidence, :risk_level, :advice, :image_url, :treatments_json)
                 """
             ),
             {
@@ -191,6 +246,7 @@ def save_diagnosis_row(
                 "risk_level": risk_level,
                 "advice": advice,
                 "image_url": image_url,
+                "treatments_json": treatments_json,
             },
         )
 
@@ -207,6 +263,15 @@ def _serialize_row(row: dict[str, Any]) -> dict[str, Any]:
     ts = out.get("created_at")
     if isinstance(ts, datetime):
         out["created_at"] = ts.isoformat()
+    tj = out.pop("treatments_json", None)
+    if tj:
+        try:
+            parsed = json.loads(tj)
+            out["treatments"] = parsed if isinstance(parsed, list) else []
+        except json.JSONDecodeError:
+            out["treatments"] = []
+    else:
+        out["treatments"] = []
     return out
 
 
@@ -218,7 +283,7 @@ def list_diagnoses(x_client_id: str | None = Header(default=None, alias="X-Clien
         result = conn.execute(
             text(
                 """
-                SELECT id, created_at, language, symptom_text, disease, confidence, risk_level, advice
+                SELECT id, created_at, language, symptom_text, disease, confidence, risk_level, advice, treatments_json
                 FROM diagnoses
                 WHERE client_id = :cid
                 ORDER BY created_at DESC
@@ -304,6 +369,9 @@ async def diagnose(
     else:
         payload = _mock_payload(language)
 
+    treatments = payload.get("treatments")
+    t_json = json.dumps(treatments) if isinstance(treatments, list) else None
+
     save_diagnosis_row(
         client_id=client_id,
         language=language,
@@ -313,6 +381,7 @@ async def diagnose(
         risk_level=payload["risk_level"],
         advice=payload["advice"],
         image_url=image.filename,
+        treatments_json=t_json,
     )
 
     return payload
