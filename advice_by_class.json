@@ -1,0 +1,53 @@
+{
+  "Tomato___Early_blight": {
+    "en": {
+      "disease": "Early Blight",
+      "risk_level": "medium",
+      "advice": "Avoid overwatering and remove infected leaves. Use recommended fungicide per label."
+    },
+    "hi": {
+      "disease": "अर्ली ब्लाइट",
+      "risk_level": "medium",
+      "advice": "ज्यादा पानी न दें और संक्रमित पत्तियां हटा दें।"
+    },
+    "es": {
+      "disease": "Tizón temprano",
+      "risk_level": "medium",
+      "advice": "Evita el exceso de riego y retira las hojas infectadas."
+    }
+  },
+  "Tomato___Late_blight": {
+    "en": {
+      "disease": "Late Blight",
+      "risk_level": "high",
+      "advice": "Improve airflow, avoid wet foliage, remove infected tissue; consult local extension for fungicide timing."
+    },
+    "hi": {
+      "disease": "लेट ब्लाइट",
+      "risk_level": "high",
+      "advice": "हवा बेहतर करें, गीली पत्तियों से बचें, संक्रमित हिस्से हटाएं।"
+    },
+    "es": {
+      "disease": "Tizón tardío",
+      "risk_level": "high",
+      "advice": "Mejora el flujo de aire, evita mojar el follaje y retira tejido infectado."
+    }
+  },
+  "Tomato___healthy": {
+    "en": {
+      "disease": "Healthy (tomato)",
+      "risk_level": "low",
+      "advice": "No clear disease signs. Continue good spacing, watering at soil level, and scouting."
+    },
+    "hi": {
+      "disease": "स्वस्थ (टमाटर)",
+      "risk_level": "low",
+      "advice": "स्पष्ट रोग के लक्षण नहीं। अच्छी दूरी और मिट्टी पर पानी जारी रखें।"
+    },
+    "es": {
+      "disease": "Sano (tomate)",
+      "risk_level": "low",
+      "advice": "Sin signos claros de enfermedad. Mantén riego al suelo y buen espaciamiento."
+    }
+  }
+}
