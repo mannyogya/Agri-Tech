@@ -3,3 +3,4 @@ uvicorn[standard]
 python-multipart
 sqlalchemy>=2.0
 psycopg2-binary
+openai>=1.0.0

@@ -1,9 +1,12 @@
-from fastapi import FastAPI, UploadFile, File, Form, Header
-from fastapi.middleware.cors import CORSMiddleware
+import io
 import os
-from sqlalchemy import create_engine, text
-from typing import Any
 from datetime import datetime
+from typing import Any
+
+from fastapi import FastAPI, File, Form, Header, HTTPException, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
+from openai import OpenAI
+from sqlalchemy import create_engine, text
 
 app = FastAPI(title="Agritech")
 
@@ -83,6 +86,37 @@ def list_diagnoses(x_client_id: str | None = Header(default=None, alias="X-Clien
         rows = [dict(r._mapping) for r in result]
 
     return {"items": [_serialize_row(r) for r in rows]}
+
+
+@app.post("/transcribe")
+async def transcribe(
+    audio: UploadFile = File(...),
+    language: str = Form("en"),
+):
+    """Upload short audio; returns transcript text (OpenAI Whisper)."""
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        raise HTTPException(status_code=500, detail="OPENAI_API_KEY is not set")
+
+    content = await audio.read()
+    if not content:
+        raise HTTPException(status_code=400, detail="Empty audio file")
+
+    buf = io.BytesIO(content)
+    buf.name = audio.filename or "audio.m4a"
+
+    lang_map = {"en": "en", "hi": "hi", "es": "es"}
+    whisper_lang = lang_map.get(language, "en")
+
+    client = OpenAI(api_key=api_key)
+    tr = client.audio.transcriptions.create(
+        model="whisper-1",
+        file=buf,
+        language=whisper_lang,
+    )
+
+    return {"text": tr.text}
+
 
 @app.get("/")
 def home():
