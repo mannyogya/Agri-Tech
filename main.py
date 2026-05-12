@@ -94,9 +94,30 @@ def _ensure_model_loaded() -> bool:
     return True
 
 
+def _pil_resize_shortest_edge(img: Image.Image, size: int) -> Image.Image:
+    """Match torchvision.transforms.Resize(size) (shorter side = size, aspect preserved)."""
+    w, h = img.size
+    if min(w, h) == size:
+        return img
+    if w < h:
+        nh = max(1, int(round(h * (size / float(w)))))
+        return img.resize((size, nh), Image.Resampling.BILINEAR)
+    nw = max(1, int(round(w * (size / float(h)))))
+    return img.resize((nw, size), Image.Resampling.BILINEAR)
+
+
+def _pil_center_crop(img: Image.Image, crop: int) -> Image.Image:
+    w, h = img.size
+    left = max(0, (w - crop) // 2)
+    top = max(0, (h - crop) // 2)
+    return img.crop((left, top, left + crop, top + crop))
+
+
 def _preprocess_image(raw: bytes) -> np.ndarray:
+    """Match ml/train.py validation pipeline: Resize(256) → CenterCrop(224) → ImageNet norm."""
     img = Image.open(io.BytesIO(raw)).convert("RGB")
-    img = img.resize((224, 224), Image.Resampling.BILINEAR)
+    img = _pil_resize_shortest_edge(img, 256)
+    img = _pil_center_crop(img, 224)
     arr = np.asarray(img, dtype=np.float32) / 255.0
     arr = np.transpose(arr, (2, 0, 1))
     mean = np.array([0.485, 0.456, 0.406], dtype=np.float32).reshape(3, 1, 1)
@@ -320,7 +341,7 @@ async def transcribe(
     buf = io.BytesIO(content)
     buf.name = audio.filename or "audio.m4a"
 
-    lang_map = {"en": "en", "hi": "hi", "es": "es"}
+    lang_map = {"en": "en", "hi": "hi", "es": "es", "pa": "hi"}
     whisper_lang = lang_map.get(language, "en")
 
     client = OpenAI(api_key=api_key)
@@ -373,16 +394,98 @@ def home():
 
 @app.get("/model-status")
 def model_status():
-    """Whether ONNX classifier + labels + advice loaded (real predictions vs mock)."""
+    """Whether ONNX classifier + labels + advice loaded (real predictions vs mock).
+
+    When loaded, `classes` is the exact label order the ONNX logits use — the model
+    cannot predict anything outside this list (deploy training `labels.json` in lockstep).
+    """
     ok = _ensure_model_loaded()
     out: dict[str, Any] = {
         "model_loaded": ok,
         "num_classes": len(_CLASS_NAMES) if _CLASS_NAMES else 0,
         "onnxruntime_installed": ort is not None,
     }
+    if ok and _CLASS_NAMES is not None:
+        out["classes"] = list(_CLASS_NAMES)
+    else:
+        out["classes"] = []
     if not ok and _LAST_LOAD_ERROR:
         out["load_error"] = _LAST_LOAD_ERROR
     return out
+
+
+@app.post("/training-sample")
+async def training_sample(
+    image: UploadFile = File(...),
+    label_hint: str = Form(""),
+    x_client_id: str | None = Header(default=None, alias="X-Client-Id"),
+):
+    """Optional: save anonymous JPEGs into TRAINING_CONTRIBUTE_DIR for later labeling/training."""
+    root = (os.getenv("TRAINING_CONTRIBUTE_DIR") or "").strip()
+    if not root:
+        return {"ok": False, "skipped": True, "reason": "TRAINING_CONTRIBUTE_DIR not set on server"}
+    dest_root = Path(root)
+    dest_root.mkdir(parents=True, exist_ok=True)
+    safe = "".join(c if c.isalnum() or c in "-_" else "_" for c in (label_hint or ""))[:80] or "unknown"
+    ts = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+    cid = (x_client_id or "anon").replace("/", "_")[:40]
+    fn = f"{ts}_{cid}_{safe}.jpg"
+    dest = dest_root / fn
+    dest.write_bytes(await image.read())
+    return {"ok": True, "saved": str(dest)}
+
+
+class AskCropBody(BaseModel):
+    question: str
+    language: str = "en"
+    context: str | None = None
+
+
+@app.post("/ask-crop")
+def ask_crop(
+    body: AskCropBody,
+    x_client_id: str | None = Header(default=None, alias="X-Client-Id"),
+):
+    """Short farmer Q&A — requires OPENAI_API_KEY; falls back to educational stub."""
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        return {
+            "answer": (
+                "AI answers need OPENAI_API_KEY on the server. Meanwhile: check your product label rate, "
+                "respect pre-harvest intervals, and avoid spraying if heavy rain is forecast within 24–48h "
+                "unless the label allows."
+            ),
+            "source": "stub",
+        }
+    client = OpenAI(api_key=api_key)
+    lang_note = {
+        "en": "Answer briefly in English.",
+        "hi": "जवाब संक्षेप में हिंदी में दें।",
+        "es": "Responde brevemente en español.",
+        "pa": "ਜਵਾਬ ਸੰਖੇਪ ਵਿੱਚ ਪੰਜਾਬੀ ਵਿੱਚ ਦਿਓ।",
+    }.get(body.language, "Answer briefly.")
+    sys_prompt = (
+        "You are an agricultural extension assistant. Give practical, cautious guidance — cite label checks "
+        "and local advisers when risk is high. Never invent exact pesticide rates; refer to the printed label. "
+        + lang_note
+    )
+    user_prompt = body.question.strip()
+    if body.context:
+        user_prompt += f"\n\nContext from app:\n{body.context}"
+    try:
+        chat = client.chat.completions.create(
+            model=os.getenv("OPENAI_CHAT_MODEL") or "gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": sys_prompt},
+                {"role": "user", "content": user_prompt},
+            ],
+            temperature=0.35,
+            max_tokens=450,
+        )
+        msg = chat.choices[0].message.content or ""
+        return {"answer": msg.strip(), "source": "openai"}
+    except Exception as e:
+        return {"answer": f"Could not reach AI right now ({e!s}). Try again later.", "source": "error"}
 
 
 @app.post("/diagnose")
@@ -390,9 +493,13 @@ async def diagnose(
     image: UploadFile = File(...),
     language: str = Form("en"),
     symptom_text: str | None = Form(None),
+    weather_context: str | None = Form(None),
+    contribute_training: str | None = Form(None),
     x_client_id: str | None = Header(default=None, alias="X-Client-Id"),
 ):
     client_id = x_client_id or "anonymous"
+
+    _ = (weather_context, contribute_training)  # accepted from app; future: enrich advice / optional disk queue
 
     raw = await image.read()
     payload: dict[str, Any]

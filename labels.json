@@ -4,6 +4,21 @@
     "Tomato___Late_blight",
     "Tomato___Leaf_Mold",
     "Tomato___Septoria_leaf_spot",
-    "Tomato___healthy"
+    "Tomato___healthy",
+    "Wheat _Common_Root_Rot",
+    "Wheat_Black_Rust",
+    "Wheat_Blast",
+    "Wheat_Brown_Rust",
+    "Wheat_Fusarium_Head_Blight",
+    "Wheat_Healthy",
+    "Wheat_Leaf_Blight",
+    "Wheat_Mildew",
+    "Wheat_Mite",
+    "Wheat_Septoria",
+    "Wheat_Smut",
+    "Wheat_Stem_fly",
+    "Wheat_Tan_spot",
+    "Wheat_Yellow_Rust",
+    "Wheat__Aphid"
   ]
 }
